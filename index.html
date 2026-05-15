@@ -24,7 +24,7 @@ header{background:#2d6a2d;color:#fff;padding:0 32px;display:flex;align-items:cen
 .sidebar{background:#fff;border-right:2px solid #c8ddc8;padding:20px;overflow-y:auto;max-height:calc(100vh - 80px)}
 .slabel{display:block;font-size:16px;font-weight:800;color:#2d6a2d;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
 .ssec{margin-bottom:16px}
-select,input[type=text],input[type=number],input[type=date],input[type=url],input[type=month]{width:100%;padding:12px 14px;border:1px solid #c8ddc8;border-radius:8px;font-size:16px;font-family:inherit;background:#fafefa;color:#1a2e1a;outline:none}
+select,input[type=text],input[type=number],input[type=date],input[type=url],input[type=month]{width:100%;padding:8px 10px;border:1px solid #c8ddc8;border-radius:7px;font-size:13px;font-family:inherit;background:#fafefa;color:#1a2e1a;outline:none}
 select:focus,input:focus{border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,45,.1)}
 .btn{width:100%;padding:10px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s;margin-top:6px}
 .btn-green{background:#2d6a2d;color:#fff}.btn-green:hover{background:#245524}
@@ -43,11 +43,11 @@ select:focus,input:focus{border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,4
 .tabs{display:flex;gap:6px;margin-bottom:20px;background:#fff;border-radius:12px;padding:5px;border:1px solid #d4e6d4;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .tab{padding:11px 24px;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#4a7a4a;font-family:inherit}
 .tab.active{background:#2d6a2d;color:#fff}
-.card{background:#fff;border-radius:14px;border:1px solid #d4e6d4;padding:28px;margin-bottom:16px}
+.card{background:#fff;border-radius:12px;border:1px solid #d4e6d4;padding:20px;margin-bottom:14px}
 .ctitle{font-size:17px;font-weight:700;color:#2d6a2d;margin-bottom:16px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .fg{display:flex;flex-direction:column;gap:5px}
-.fg label{font-size:14px;font-weight:700;color:#4a7a4a;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.fg label{font-size:11px;font-weight:700;color:#4a7a4a;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
 .full{grid-column:1/-1}
 .avatar-area{display:flex;align-items:center;gap:20px;margin-bottom:18px;padding:24px;background:#f0f7f0;border-radius:14px;border:1px dashed #9ec49e;min-height:140px}
 .avcircle{width:110px;height:110px;border-radius:50%;background:#2d6a2d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:700;flex-shrink:0;overflow:hidden}
@@ -58,18 +58,18 @@ select:focus,input:focus{border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,4
 /* REVIEW */
 .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .rgroup{background:#f8fdf8;border:1px solid #d4e6d4;border-radius:10px;padding:14px 16px}
-.rgroup-title{font-size:16px;font-weight:800;color:#2d6a2d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #c8ddc8}
-.ritem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eef5ee;font-size:16px}
+.rgroup-title{font-size:13px;font-weight:800;color:#2d6a2d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #c8ddc8}
+.ritem{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #eef5ee;font-size:14px}
 .ritem:last-child{border-bottom:none}
 .ritem input[type=checkbox]{width:22px;height:22px;accent-color:#2d6a2d;flex-shrink:0;cursor:pointer}
-.ritem label{flex:1;cursor:pointer;line-height:1.3;color:#1a2e1a;font-size:16px}
+.ritem label{flex:1;cursor:pointer;line-height:1.3;color:#1a2e1a;font-size:14px}
 .ritem .pts{font-size:13px;font-weight:700;color:#4a7a4a;background:#e8f5e8;padding:3px 9px;border-radius:10px;flex-shrink:0}
 .score-bar{background:#fff;border:1px solid #d4e6d4;border-radius:10px;padding:18px 20px;margin-bottom:14px;display:flex;align-items:center;gap:20px}
-.score-num{font-size:52px;font-weight:700;color:#2d6a2d;min-width:80px;text-align:center}
+.score-num{font-size:44px;font-weight:700;color:#2d6a2d;min-width:70px;text-align:center}
 .score-label{font-size:14px;color:#7a9a7a;font-weight:600;text-align:center}
 .score-bar-outer{flex:1;height:20px;background:#eef5ee;border-radius:10px;overflow:hidden}
 .score-bar-inner{height:100%;border-radius:6px;transition:width .4s,background .4s}
-.level-badge{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-left:8px}
+.level-badge{padding:6px 14px;border-radius:20px;font-size:16px;font-weight:700;margin-left:10px}
 /* PIPELINE */
 .pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
 .pcol{border-radius:10px;border:1px solid #d4e6d4;overflow:hidden}
@@ -189,7 +189,7 @@ select:focus,input:focus{border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,4
         <div class="fg full"><label>Address</label><input type="text" id="address"></div>
         <div class="fg"><label>Area</label><select id="area"></select></div>
         <div class="fg"><label>Commitment Level</label>
-          <div id="commitmentDisplay" style="padding:12px 14px;border:1px solid #c8ddc8;border-radius:8px;font-size:17px;background:#f0f7f0;color:#2d6a2d;font-weight:700;min-height:48px;display:flex;align-items:center">—</div>
+          <div id="commitmentDisplay" style="padding:8px 10px;border:1px solid #c8ddc8;border-radius:7px;font-size:14px;background:#f0f7f0;color:#2d6a2d;font-weight:700;min-height:36px;display:flex;align-items:center">—</div>
           <input type="hidden" id="commitment" value="1">
         </div>
       </div>
@@ -207,7 +207,7 @@ select:focus,input:focus{border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,4
         </div>
         <div style="flex:1">
           <div style="display:flex;align-items:center;margin-bottom:6px">
-            <span style="font-size:20px;font-weight:700;color:#1a2e1a" id="scoreName">—</span>
+            <span style="font-size:26px;font-weight:700;color:#1a2e1a" id="scoreName">—</span>
             <span class="level-badge kl1" id="scoreBadge">L1 Fairweather</span>
           </div>
           <div class="score-bar-outer"><div class="score-bar-inner" id="scoreBarInner" style="width:0%;background:#e07030"></div></div>
@@ -299,12 +299,9 @@ select:focus,input:focus{border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,4
 
   <!-- MONTHLY REPORT -->
   <div id="tab-report" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div>
-        <label class="slabel">Report Month</label>
-        <input type="month" id="reportMonth" style="padding:7px 10px;border:1px solid #c8ddc8;border-radius:7px;font-size:13px;font-family:inherit;background:#fff;margin-top:4px" onchange="renderReport()">
-      </div>
-      <button class="btn btn-blue" style="width:auto;padding:9px 20px" onclick="window.print()">🖨️ Print / Save PDF</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="monthToggleBtns"></div>
+      <button style="padding:10px 24px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;border:none;background:#1a3a8a;color:#fff;font-family:inherit" onclick="window.print()">🖨️ Export Pipeline PDF</button>
     </div>
     <div id="reportContent"></div>
   </div>
@@ -515,75 +512,69 @@ function renderPipeline(){
     </div>`).join(''):'<div class="empty">None</div>'}</div></div>`).join('');
 }
 
+function renderMonthButtons(){
+  const allMonths=[...new Set(Object.values(reviews).flatMap(r=>Object.keys(r)))].sort().reverse();
+  const now=new Date();
+  const thisMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  if(!allMonths.includes(thisMonth)) allMonths.unshift(thisMonth);
+  const current=document.getElementById('reportMonth')?document.getElementById('reportMonth').value||thisMonth:thisMonth;
+  window._reportMonth=window._reportMonth||thisMonth;
+  document.getElementById('monthToggleBtns').innerHTML=allMonths.map(m=>{
+    const d=new Date(m+'-01');
+    const label=d.toLocaleString('default',{month:'long',year:'numeric'});
+    const active=m===window._reportMonth;
+    return `<button onclick="setReportMonth('${m}')" style="padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;background:${active?'#2d6a2d':'#fff'};color:${active?'#fff':'#4a7a4a'};border:1px solid #c8ddc8">${label}</button>`;
+  }).join('');
+}
+
+function setReportMonth(m){
+  window._reportMonth=m;
+  renderMonthButtons();
+  renderReport();
+}
+
 function renderReport(){
-  const monthKey=document.getElementById('reportMonth').value;
-  if(!monthKey){document.getElementById('reportContent').innerHTML='<div class="empty">Select a month above</div>';return;}
+  const monthKey=window._reportMonth||(()=>{const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`})();
   const [y,mo]=monthKey.split('-');
   const monthName=new Date(y,mo-1,1).toLocaleString('default',{month:'long',year:'numeric'});
-  const membersWithReview=members.filter(m=>reviews[m.id]&&reviews[m.id][monthKey]);
-  const all=members.length;
-  const reviewed=membersWithReview.length;
-
-  let html=`<div style="border:1px solid #d4e6d4;border-radius:10px;padding:18px;margin-bottom:14px;background:#fff">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div>
-        <div style="font-size:22px;font-weight:700;color:#2d6a2d">🐑 State of the Flock</div>
-        <div style="font-size:16px;font-weight:600;color:#1a2e1a;margin-top:2px">${monthName} Report</div>
-        <div style="font-size:12px;color:#7a9a7a;margin-top:2px">Go Ye Amsterdam · Monthly Pastoral Review</div>
-      </div>
-      <div style="text-align:right;padding:12px 16px;border:1px solid #d4e6d4;border-radius:8px">
-        <div style="font-size:11px;color:#7a9a7a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Reviews</div>
-        <div style="font-size:42px;font-weight:800;color:#2d6a2d;line-height:1">${reviewed}</div>
-        <div style="font-size:11px;color:#7a9a7a">of ${all} members</div>
-      </div>
+  const reviewed=members.filter(m=>reviews[m.id]&&reviews[m.id][monthKey]).length;
+  let html=`<div style="background:#fff;border-radius:12px;border:1px solid #d4e6d4;padding:18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-size:22px;font-weight:700;color:#2d6a2d">🐑 State of the Flock — ${monthName}</div>
+      <div style="font-size:13px;color:#7a9a7a;margin-top:3px">Go Ye Amsterdam · ${reviewed} of ${members.length} members reviewed</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px">`;
-
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">`;
   [1,2,3,4].forEach(l=>{
     const lv=LEVELS[l];
-    const cnt=membersWithReview.filter(m=>m.commitment==l).length;
-    html+=`<div style="border:1px solid #d4e6d4;border-radius:8px;padding:10px;text-align:center;background:#fafefa">
-      <div style="font-size:42px;font-weight:800;color:${lv.color};line-height:1">${cnt}</div>
-      <div style="font-size:14px;color:#7a9a7a;font-weight:600;margin-top:4px">L${l} ${lv.label}</div>
+    const cnt=members.filter(m=>m.commitment==l).length;
+    html+=`<div style="border:2px solid ${lv.color};border-radius:8px;padding:10px 14px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:${lv.color};line-height:1">${cnt}</div>
+      <div style="font-size:12px;font-weight:600;color:#4a7a4a;margin-top:2px">L${l} ${['Fairweather','Situational','Non-Situational','Marital'][l-1]}</div>
     </div>`;
   });
   html+=`</div></div>`;
-
-  if(!membersWithReview.length){
-    html+='<div class="empty card">No reviews recorded for this month. Complete monthly reviews first.</div>';
-  } else {
-    membersWithReview.forEach(m=>{
-      const rev=reviews[m.id][monthKey];
-      let score=0;CHECKS.forEach(c=>{if(rev[c.id])score+=c.pts;});
-      const lvl=scoreToLevel(score);const lv=LEVELS[lvl];
-      const ticked=CHECKS.filter(c=>rev[c.id]);
-      const missed=CHECKS.filter(c=>!rev[c.id]);
-      html+=`<div style="border:1px solid #d4e6d4;border-radius:14px;padding:20px;margin-bottom:14px;background:#fff;page-break-inside:avoid">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #eef5ee">
-          <div>
-            <span style="font-size:20px;font-weight:700;color:#1a2e1a">${m.firstName} ${m.surname}</span>
-            <span style="font-size:14px;color:#7a9a7a;margin-left:10px">#${m.num} · ${m.area}</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="text-align:right">
-              <div style="font-size:24px;font-weight:700;color:#2d6a2d">${score}<span style="font-size:14px;font-weight:400;color:#7a9a7a"> / 280 pts</span></div>
-            </div>
-            <span class="kpill ${lv.cls}" style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700"><span class="dot ${lv.dot}" style="width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px"></span>L${lvl} ${lv.label}</span>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:#2d6a2d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">✅ Completed (${ticked.length})</div>
-            <div style="display:flex;flex-wrap:wrap;gap:4px">${ticked.map(c=>`<span style="font-size:13px;padding:4px 10px;border-radius:10px;background:#e8f5e8;color:#1a5c2e;font-weight:500">${CHECK_LABELS[c.id]}</span>`).join('')||'<span style="color:#9aaa9a;font-size:11px">None</span>'}</div>
-          </div>
-          ${missed.length?`<div>
-            <div style="font-size:13px;font-weight:700;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">❌ Not completed (${missed.length})</div>
-            <div style="display:flex;flex-wrap:wrap;gap:4px">${missed.map(c=>`<span style="font-size:13px;padding:4px 10px;border-radius:10px;background:#fde8d8;color:#7a3010;font-weight:500">${CHECK_LABELS[c.id]}</span>`).join('')}</div>
-          </div>`:''}
-        </div>
-      </div>`;
-    });
-  }
+  html+=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">`;
+  [1,2,3,4].forEach(l=>{
+    const lv=LEVELS[l];
+    const grp=members.filter(m=>m.commitment==l);
+    html+=`<div style="border-radius:10px;border:1px solid #d4e6d4;overflow:hidden">
+      <div style="padding:13px 15px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:space-between" class="ph${l}">
+        <span>L${l} · ${['Fairweather','Situational','Non-Situational','Marital'][l-1]}</span>
+        <span style="background:rgba(0,0,0,.12);border-radius:20px;padding:2px 9px;font-size:13px">${grp.length}</span>
+      </div>
+      <div style="padding:10px;background:#fff;min-height:60px">
+        ${grp.length?grp.map(m=>{
+          let sc=0;const rev=reviews[m.id]&&reviews[m.id][monthKey];
+          if(rev)CHECKS.forEach(c=>{if(rev[c.id])sc+=c.pts;});
+          return `<div style="padding:9px 11px;border-radius:7px;font-size:14px;margin-bottom:6px;border:1px solid #eef5ee;background:#fafefa">
+            <div style="font-weight:700;color:#1a2e1a">${m.firstName} ${m.surname}</div>
+            <div style="font-size:12px;color:#7a9a7a;margin-top:2px">#${m.num}${rev?' · '+sc+' pts':' · not reviewed'}</div>
+          </div>`;
+        }).join(''):'<div style="text-align:center;padding:16px;color:#9aaa9a;font-size:13px">None</div>'}
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
   document.getElementById('reportContent').innerHTML=html;
 }
 
@@ -597,7 +588,8 @@ function switchTab(name,btn){
   if(name==='report'){
     const now=new Date();
     const mk=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-    if(!document.getElementById('reportMonth').value)document.getElementById('reportMonth').value=mk;
+    if(!window._reportMonth)window._reportMonth=mk;
+    renderMonthButtons();
     renderReport();
   }
 }
