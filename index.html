@@ -396,13 +396,17 @@ function handlePhoto(input){
 function newMember(){
   currentId=null;
   ['firstName','surname','age','address'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('birthday').value='';
-  document.getElementById('area').value='Amsterdam Zuid';
+  document.getElementById('dob').value='';
+  const areaEl=document.getElementById('area');
+  if(areaEl.options.length) areaEl.selectedIndex=0;
   document.getElementById('commitment').value='1';
+  const cd=document.getElementById('commitmentDisplay');
+  if(cd) cd.textContent='Level 1 — Fairweather';
   document.getElementById('memberNumDisplay').textContent='#'+pad(nextNum);
   document.getElementById('avatarCircle').innerHTML='?';
   document.getElementById('reviewNoMember').style.display='block';
   document.getElementById('reviewContent').style.display='none';
+  switchTab('record', document.querySelectorAll('.tab')[0]);
   renderMemberList();
 }
 
