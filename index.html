@@ -81,12 +81,14 @@ select:focus,input:focus{border-color:#2d6a2d}
 .toast{position:fixed;bottom:20px;right:20px;background:#2d6a2d;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;transform:translateY(80px);opacity:0;transition:all .3s;z-index:999}
 .toast.show{transform:translateY(0);opacity:1}
 @media print{
-  header,.sidebar,.tabs,.btn,.ssec,#tab-record,#tab-review,#exportBar,#areaManager{display:none!important}
+  header,.sidebar,.tabs,.ssec,.btn,#tab-record,#tab-review,#tab-pipeline,#exportBar,#areaManager{display:none!important}
   .main{display:block!important}
   .content{max-height:none!important;overflow:visible!important;padding:10px!important}
-  #tab-pipeline{display:block!important}
-  .pcol{break-inside:avoid}
-  @page{margin:10mm;size:A4 landscape}
+  #tab-followup{display:block!important}
+  #tab-followup > div:first-child{display:none!important}
+  body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:14mm;size:A4 portrait}
+  .content > div > div{page-break-inside:avoid}
 }
 </style>
 </head>
@@ -121,6 +123,7 @@ select:focus,input:focus{border-color:#2d6a2d}
     <button class="tab active" onclick="switchTab('record',this)">👤 Member Record</button>
     <button class="tab" onclick="switchTab('review',this)">✅ Monthly Review</button>
     <button class="tab" onclick="switchTab('pipeline',this)">📊 Pipeline</button>
+    <button class="tab" onclick="switchTab('followup',this)">📋 Follow Up</button>
   </div>
 
   <!-- MEMBER RECORD -->
@@ -154,7 +157,17 @@ select:focus,input:focus{border-color:#2d6a2d}
           <div class="fg"><label>Date of Birth</label><input type="date" id="dob" onchange="calcAge()"></div>
           <div class="fg full"><label>Address</label><input type="text" id="address"></div>
           <div class="fg"><label>Area</label><select id="area"></select></div>
-          <div class="fg"><label>Bacenta Shepherd</label><input type="text" id="bacentaShepherd" placeholder="Shepherd name"></div>
+          <div class="fg"><label>Bacenta Shepherd</label><select id="bacentaShepherd">
+  <option value="">-- Select Shepherd --</option>
+  <option>BRog</option>
+  <option>Favour</option>
+  <option>Jonathan</option>
+  <option>LP Becks</option>
+  <option>LP Jo</option>
+  <option>Mansa</option>
+  <option>Theo</option>
+  <option>Vakai</option>
+</select></div>
           <div class="fg full"><label>Commitment Level</label>
             <div id="commitmentDisplay" style="padding:8px 10px;border:1px solid #c8ddc8;border-radius:7px;font-size:14px;background:#f0f7f0;color:#2d6a2d;font-weight:700;min-height:36px;display:flex;align-items:center">—</div>
             <input type="hidden" id="commitment" value="1">
@@ -273,6 +286,16 @@ select:focus,input:focus{border-color:#2d6a2d}
     <div class="sgrid" id="statsGrid"></div>
     <div class="pipeline" id="pipelineGrid"></div>
   </div>
+
+  <!-- FOLLOW UP -->
+  <div id="tab-followup" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div style="font-size:20px;font-weight:700;color:#2d6a2d">📋 Follow Up Assignments</div>
+      <button onclick="printFollowUp()" style="padding:9px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;background:#1a3a8a;color:#fff;font-family:inherit">🖨️ Export PDF</button>
+    </div>
+    <div id="followup-content"></div>
+  </div>
+
 </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -286,46 +309,28 @@ const CHECKS=[
   {id:'c_cd1',pts:10},{id:'c_sp1',pts:20},{id:'c_sp2',pts:20},{id:'c_sp3',pts:20},{id:'c_sp4',pts:20},
   {id:'c_sp6',pts:30},{id:'c_cd2',pts:30},{id:'c_sp5',pts:50}
 ];
-const LEVELS={
-  1:{label:'Fairweather',cls:'kl1',color:'#e07030'},
-  2:{label:'Situational',cls:'kl2',color:'#d4a017'},
-  3:{label:'Non-Situational',cls:'kl3',color:'#28a745'},
-  4:{label:'Marital',cls:'kl4',color:'#0d6efd'}
-};
+const LEVELS={1:{label:'Fairweather',cls:'kl1',color:'#e07030'},2:{label:'Situational',cls:'kl2',color:'#d4a017'},3:{label:'Non-Situational',cls:'kl3',color:'#28a745'},4:{label:'Marital',cls:'kl4',color:'#0d6efd'}};
 function scoreToLevel(s){if(s>=205)return 4;if(s>=130)return 3;if(s>=80)return 2;return 1;}
 function pad(n){return String(n).padStart(3,'0');}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-
 let members=JSON.parse(localStorage.getItem('sof_members')||'[]');
 let reviews=JSON.parse(localStorage.getItem('sof_reviews')||'{}');
 let areas=JSON.parse(localStorage.getItem('sof_areas')||'["Amsterdam Zuid","Amsterdam Zuidoost"]');
-let currentId=null;
-let pipelineArea='all';
+let currentId=null,pipelineArea='all';
 let nextNum=members.length?Math.max(...members.map(m=>parseInt(m.num||0)))+1:1;
-
-function saveData(){
-  try{localStorage.setItem('sof_members',JSON.stringify(members));localStorage.setItem('sof_reviews',JSON.stringify(reviews));}
-  catch(e){toast('⚠️ Storage full');}
-}
+function saveData(){try{localStorage.setItem('sof_members',JSON.stringify(members));localStorage.setItem('sof_reviews',JSON.stringify(reviews));}catch(e){toast('Storage full');}}
 function saveAreas(){localStorage.setItem('sof_areas',JSON.stringify(areas));}
-
 function renderAreaSelects(){
-  const f=document.getElementById('areaFilter');
-  f.innerHTML='<option value="all">All Areas</option>'+areas.map(a=>`<option value="${a}">${a}</option>`).join('');
+  document.getElementById('areaFilter').innerHTML='<option value="all">All Areas</option>'+areas.map(a=>`<option value="${a}">${a}</option>`).join('');
   document.getElementById('area').innerHTML=areas.map(a=>`<option value="${a}">${a}</option>`).join('');
 }
-
 function renderMemberList(){
   const f=document.getElementById('areaFilter').value;
   const filtered=f==='all'?members:members.filter(m=>m.area===f);
   const list=document.getElementById('memberList');
   if(!filtered.length){list.innerHTML='<div class="empty">No members yet</div>';return;}
-  list.innerHTML=filtered.map(m=>`<div class="mitem${m.id===currentId?' active':''}" onclick="loadMember('${m.id}')">
-    <span>${m.firstName||'—'} ${m.surname||''}<br><span class="mnum">#${m.num}</span></span>
-    <span class="abadge ${m.area==='Amsterdam Zuid'?'az':'azo'}">${m.area==='Amsterdam Zuid'?'Zuid':'Zuidoost'}</span>
-  </div>`).join('');
+  list.innerHTML=filtered.map(m=>`<div class="mitem${m.id===currentId?' active':''}" onclick="loadMember('${m.id}')"><span>${m.firstName||'—'} ${m.surname||''}<br><span class="mnum">#${m.num}</span></span><span class="abadge ${m.area==='Amsterdam Zuid'?'az':'azo'}">${m.area==='Amsterdam Zuid'?'Zuid':'Zuidoost'}</span></div>`).join('');
 }
-
 function loadMember(id){
   const m=members.find(x=>x.id===id);if(!m)return;
   currentId=id;
@@ -340,32 +345,24 @@ function loadMember(id){
   document.getElementById('commitment').value=m.commitment||'1';
   updateCommitmentDisplay(m.commitment||'1');
   document.getElementById('memberNumDisplay').textContent='#'+m.num;
-  updateAvatar();
-  loadReviewForm(id);
-  renderMemberList();
-  renderMemberSummary(id);
+  updateAvatar();loadReviewForm(id);renderMemberList();renderMemberSummary(id);
 }
-
 function updateAvatar(){
   const c=document.getElementById('avatarCircle');
-  const fn=document.getElementById('firstName').value;
-  const sn=document.getElementById('surname').value;
+  const fn=document.getElementById('firstName').value;const sn=document.getElementById('surname').value;
   c.textContent=(fn?fn[0].toUpperCase():'')+(sn?sn[0].toUpperCase():'')||'?';
 }
-
 function updateCommitmentDisplay(lvl){
   const lv=LEVELS[lvl];
-  const el=document.getElementById('commitmentDisplay');
-  if(el)el.textContent='Level '+lvl+' — '+lv.label;
+  const el=document.getElementById('commitmentDisplay');if(el)el.textContent='Level '+lvl+' — '+lv.label;
   document.getElementById('commitment').value=String(lvl);
 }
-
 function newMember(){
   currentId=null;
   ['firstName','surname','age','address','socialMedia','bacentaShepherd'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('dob').value='';
   const areaEl=document.getElementById('area');if(areaEl.options.length)areaEl.selectedIndex=0;
-  document.getElementById('commitment').value='1';
+  document.getElementById('bacentaShepherd').value='';
   updateCommitmentDisplay('1');
   document.getElementById('memberNumDisplay').textContent='#'+pad(nextNum);
   document.getElementById('avatarCircle').textContent='?';
@@ -375,36 +372,24 @@ function newMember(){
   document.getElementById('memberSummaryEmpty').style.display='flex';
   renderMemberList();
 }
-
 function saveMember(){
-  const fn=document.getElementById('firstName').value.trim();
-  const sn=document.getElementById('surname').value.trim();
-  if(!fn&&!sn){toast('⚠️ Enter at least a name');return;}
-  const data={firstName:fn,surname:sn,age:document.getElementById('age').value,
-    dob:document.getElementById('dob').value,address:document.getElementById('address').value,
-    area:document.getElementById('area').value,bacentaShepherd:document.getElementById('bacentaShepherd').value.trim(),
-    socialMedia:document.getElementById('socialMedia').value.trim(),
-    commitment:document.getElementById('commitment').value};
-  if(currentId){
-    const idx=members.findIndex(x=>x.id===currentId);
-    members[idx]={...members[idx],...data};
-  } else {
-    const nm={id:Date.now().toString(),num:pad(nextNum),...data};
-    members.push(nm);currentId=nm.id;nextNum++;
-  }
-  saveData();renderAll();toast('✅ Member saved!');
-  renderMemberSummary(currentId);
+  const fn=document.getElementById('firstName').value.trim();const sn=document.getElementById('surname').value.trim();
+  if(!fn&&!sn){toast('Enter at least a name');return;}
+  const data={firstName:fn,surname:sn,age:document.getElementById('age').value,dob:document.getElementById('dob').value,
+    address:document.getElementById('address').value,area:document.getElementById('area').value,
+    bacentaShepherd:document.getElementById('bacentaShepherd').value,
+    socialMedia:document.getElementById('socialMedia').value.trim(),commitment:document.getElementById('commitment').value};
+  if(currentId){const idx=members.findIndex(x=>x.id===currentId);members[idx]={...members[idx],...data};}
+  else{const nm={id:Date.now().toString(),num:pad(nextNum),...data};members.push(nm);currentId=nm.id;nextNum++;}
+  saveData();renderAll();toast('Member saved!');renderMemberSummary(currentId);
 }
-
 function deleteMember(){
-  if(!currentId){toast('⚠️ Select a member first');return;}
+  if(!currentId){toast('Select a member first');return;}
   const m=members.find(x=>x.id===currentId);
   if(!confirm(`Delete ${m.firstName} ${m.surname}?`))return;
-  members=members.filter(x=>x.id!==currentId);
-  delete reviews[currentId];
-  currentId=null;saveData();newMember();renderAll();toast('🗑 Member deleted');
+  members=members.filter(x=>x.id!==currentId);delete reviews[currentId];
+  currentId=null;saveData();newMember();renderAll();toast('Member deleted');
 }
-
 function calcAge(){
   const dobVal=document.getElementById('dob').value;if(!dobVal)return;
   const today=new Date();const birth=new Date(dobVal);
@@ -413,24 +398,20 @@ function calcAge(){
   if(md<0||(md===0&&today.getDate()<birth.getDate()))age--;
   document.getElementById('age').value=age;
 }
-
 function loadReviewForm(memberId){
   document.getElementById('reviewNoMember').style.display='none';
   document.getElementById('reviewContent').style.display='block';
   const m=members.find(x=>x.id===memberId);
-  const fullName=((m.firstName||'')+(m.surname?' '+m.surname:'')).trim()||'—';
-  document.getElementById('scoreName').textContent=fullName;
+  document.getElementById('scoreName').textContent=((m.firstName||'')+(m.surname?' '+m.surname:'')).trim()||'—';
   const now=new Date();
-  const monthKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  document.getElementById('reviewMonth').value=monthKey;
-  const saved=reviews[memberId]&&reviews[memberId][monthKey];
+  const mk=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('reviewMonth').value=mk;
+  const saved=reviews[memberId]&&reviews[memberId][mk];
   CHECKS.forEach(c=>{document.getElementById(c.id).checked=saved?!!(saved[c.id]):false;});
   calcScore();
 }
-
 function calcScore(){
-  let score=0;
-  CHECKS.forEach(c=>{if(document.getElementById(c.id).checked)score+=c.pts;});
+  let score=0;CHECKS.forEach(c=>{if(document.getElementById(c.id).checked)score+=c.pts;});
   const lvl=scoreToLevel(score);const lv=LEVELS[lvl];
   document.getElementById('scoreNum').textContent=score;
   document.getElementById('scoreBadge').className='level-badge '+lv.cls;
@@ -440,60 +421,43 @@ function calcScore(){
   document.getElementById('scoreBarInner').style.background=lv.color;
   if(currentId){const m=members.find(x=>x.id===currentId);if(m){m.commitment=String(lvl);updateCommitmentDisplay(lvl);saveData();}}
 }
-
 function saveReview(){
-  if(!currentId){toast('⚠️ Select a member first');return;}
-  const monthKey=document.getElementById('reviewMonth').value;
-  if(!monthKey){toast('⚠️ Select a month');return;}
+  if(!currentId){toast('Select a member first');return;}
+  const mk=document.getElementById('reviewMonth').value;if(!mk){toast('Select a month');return;}
   if(!reviews[currentId])reviews[currentId]={};
   const data={};CHECKS.forEach(c=>{data[c.id]=document.getElementById(c.id).checked;});
-  reviews[currentId][monthKey]=data;
-  saveData();renderAll();toast('✅ Review saved for '+monthKey);
+  reviews[currentId][mk]=data;saveData();renderAll();toast('Review saved for '+mk);
 }
-
 function renderMemberSummary(id){
   const m=members.find(x=>x.id===id);
   if(!m){document.getElementById('memberSummaryPanel').style.display='none';document.getElementById('memberSummaryEmpty').style.display='flex';return;}
   document.getElementById('memberSummaryPanel').style.display='block';
   document.getElementById('memberSummaryEmpty').style.display='none';
   const lv=LEVELS[m.commitment||1];
-  const memberReviews=reviews[id]||{};
-  const latestMonth=Object.keys(memberReviews).sort().reverse()[0];
-  let score=0;if(latestMonth){CHECKS.forEach(c=>{if(memberReviews[latestMonth][c.id])score+=c.pts;});}
-  const totalReviews=Object.keys(memberReviews).length;
+  const mr=reviews[id]||{};const lm=Object.keys(mr).sort().reverse()[0];
+  let score=0;if(lm)CHECKS.forEach(c=>{if(mr[lm][c.id])score+=c.pts;});
   document.getElementById('memberSummaryContent').innerHTML=`
-    <div style="text-align:center;padding:16px 0;border-bottom:1px solid #eef5ee;margin-bottom:14px">
+    <div style="text-align:center;padding:14px 0;border-bottom:1px solid #eef5ee;margin-bottom:14px">
       <div style="font-size:48px;font-weight:800;color:${lv.color};line-height:1">${score}</div>
-      <div style="font-size:13px;color:#7a9a7a;margin-top:4px">Latest score / 390 pts</div>
-      <div style="margin-top:10px"><span style="padding:6px 16px;border-radius:20px;font-size:14px;font-weight:700;background:${lv.color}22;color:${lv.color}">Level ${m.commitment||1} — ${lv.label}</span></div>
+      <div style="font-size:12px;color:#7a9a7a;margin-top:4px">Latest score / 390 pts</div>
+      <div style="margin-top:8px"><span style="padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;background:${lv.color}22;color:${lv.color}">Level ${m.commitment||1} — ${lv.label}</span></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div style="background:#f8fdf8;border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:24px;font-weight:700;color:#2d6a2d">${totalReviews}</div>
-        <div style="font-size:11px;color:#7a9a7a;margin-top:2px">Reviews done</div>
-      </div>
-      <div style="background:#f8fdf8;border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:24px;font-weight:700;color:#2d6a2d">${m.age||'—'}</div>
-        <div style="font-size:11px;color:#7a9a7a;margin-top:2px">Age</div>
-      </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:#f8fdf8;border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:#2d6a2d">${Object.keys(mr).length}</div><div style="font-size:11px;color:#7a9a7a">Reviews done</div></div>
+      <div style="background:#f8fdf8;border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:700;color:#2d6a2d">${m.age||'—'}</div><div style="font-size:11px;color:#7a9a7a">Age</div></div>
     </div>
-    ${m.bacentaShepherd?`<div style="margin-top:12px;font-size:13px;color:#4a7a4a;text-align:center"><strong>Bacenta Shepherd:</strong> ${m.bacentaShepherd}</div>`:''}
-    ${m.socialMedia?`<div style="margin-top:10px;text-align:center"><a href="${m.socialMedia}" target="_blank" style="font-size:13px;color:#2d6a2d;font-weight:600;text-decoration:none">🔗 Social Media</a></div>`:''}
-    <div style="margin-top:12px;font-size:12px;color:#7a9a7a;text-align:center">${latestMonth?'Last reviewed: '+new Date(latestMonth+'-01').toLocaleString('default',{month:'long',year:'numeric'}):'No reviews yet'}</div>`;
+    ${m.bacentaShepherd?`<div style="margin-top:10px;font-size:13px;color:#4a7a4a;text-align:center"><strong>Shepherd:</strong> ${m.bacentaShepherd}</div>`:''}
+    ${m.socialMedia?`<div style="margin-top:8px;text-align:center"><a href="${m.socialMedia}" target="_blank" style="font-size:13px;color:#2d6a2d;font-weight:600;text-decoration:none">🔗 Social Media</a></div>`:''}
+    <div style="margin-top:10px;font-size:12px;color:#7a9a7a;text-align:center">${lm?'Last reviewed: '+new Date(lm+'-01').toLocaleString('default',{month:'long',year:'numeric'}):'No reviews yet'}</div>`;
 }
-
 function renderPipelineTabs(){
-  const tabs=document.getElementById('pipelineTabs');
-  const all=['all',...areas];
+  const tabs=document.getElementById('pipelineTabs');const all=['all',...areas];
   tabs.innerHTML=all.map(a=>`<button onclick="setPipelineArea('${a}')" style="padding:10px 20px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:inherit;background:${pipelineArea===a?'#2d6a2d':'transparent'};color:${pipelineArea===a?'#fff':'#4a7a4a'}">${a==='all'?'All Areas':a}</button>`).join('');
 }
-
 function setPipelineArea(a){pipelineArea=a;renderPipelineTabs();renderPipeline();}
-
 function renderPipeline(){
   const filtered=pipelineArea==='all'?members:members.filter(m=>m.area===pipelineArea);
-  const byLevel={1:[],2:[],3:[],4:[]};
-  filtered.forEach(m=>byLevel[m.commitment||1].push(m));
+  const byLevel={1:[],2:[],3:[],4:[]};filtered.forEach(m=>byLevel[m.commitment||1].push(m));
   document.getElementById('statsGrid').innerHTML=`
     <div class="scard"><div class="snum">${filtered.length}</div><div class="slbl2">Total Members</div></div>
     <div class="scard"><div class="snum" style="color:#e07030">${byLevel[1].length}</div><div class="slbl2">Fairweather</div></div>
@@ -507,71 +471,119 @@ function renderPipeline(){
       <div class="pm-meta">#${m.num} · ${m.area}</div>
     </div>`).join(''):'<div class="empty">None</div>'}</div></div>`).join('');
 }
-
-function toggleAreaManager(){
-  const m=document.getElementById('areaManager');
-  m.style.display=m.style.display==='block'?'none':'block';
-  if(m.style.display==='block')renderAreaList();
-}
-
-function toggleExportBar(){
-  const b=document.getElementById('exportBar');
-  b.style.display=b.style.display==='block'?'none':'block';
-  if(b.style.display==='block')renderExportMonthBtns();
-}
-
+function toggleAreaManager(){const m=document.getElementById('areaManager');m.style.display=m.style.display==='block'?'none':'block';if(m.style.display==='block')renderAreaList();}
+function toggleExportBar(){const b=document.getElementById('exportBar');b.style.display=b.style.display==='block'?'none':'block';if(b.style.display==='block')renderExportMonthBtns();}
 let _exportMonth=null;
 function renderExportMonthBtns(){
   const allMonths=[...new Set(Object.values(reviews).flatMap(r=>Object.keys(r)))].sort().reverse();
-  const now=new Date();
-  const thisMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  if(!allMonths.includes(thisMonth))allMonths.unshift(thisMonth);
-  if(!_exportMonth)_exportMonth=thisMonth;
+  const now=new Date();const tm=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  if(!allMonths.includes(tm))allMonths.unshift(tm);if(!_exportMonth)_exportMonth=tm;
   document.getElementById('exportMonthBtns').innerHTML=allMonths.map(m=>{
-    const d=new Date(m+'-01');
-    const label=d.toLocaleString('default',{month:'long',year:'numeric'});
-    const active=m===_exportMonth;
+    const d=new Date(m+'-01');const label=d.toLocaleString('default',{month:'long',year:'numeric'});const active=m===_exportMonth;
     return `<button onclick="setExportMonth('${m}')" style="padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #c8ddc8;background:${active?'#2d6a2d':'#fff'};color:${active?'#fff':'#4a7a4a'}">${label}</button>`;
   }).join('');
 }
-
 function setExportMonth(m){_exportMonth=m;renderExportMonthBtns();}
-
 function doPrint(){window.print();}
-
 function renderAreaList(){
   document.getElementById('areaList').innerHTML=areas.map((a,i)=>`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#f8fdf8;border:1px solid #d4e6d4;border-radius:7px;margin-bottom:6px;font-size:13px">
-      <span>${a}</span>
-      <button onclick="removeArea(${i})" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:13px;font-weight:600;padding:2px 6px">✕</button>
-    </div>`).join('')||'<div style="font-size:12px;color:#9aaa9a">No areas yet</div>';
+      <span>${a}</span><button onclick="removeArea(${i})" style="background:none;border:none;cursor:pointer;color:#c0392b;font-weight:600;padding:2px 6px">✕</button></div>`).join('')||'<div style="font-size:12px;color:#9aaa9a">No areas yet</div>';
 }
-
 function addArea(){
-  const input=document.getElementById('newAreaInput');
-  const val=input.value.trim();if(!val)return;
-  if(areas.includes(val)){toast('Area already exists');return;}
-  areas.push(val);saveAreas();input.value='';
-  renderAreaSelects();renderPipelineTabs();renderAreaList();
+  const input=document.getElementById('newAreaInput');const val=input.value.trim();if(!val)return;
+  if(areas.includes(val)){toast('Already exists');return;}
+  areas.push(val);saveAreas();input.value='';renderAreaSelects();renderPipelineTabs();renderAreaList();
 }
-
 function removeArea(idx){
-  const name=areas[idx];
-  if(members.some(m=>m.area===name)&&!confirm(`Members are in "${name}". Remove anyway?`))return;
-  areas.splice(idx,1);saveAreas();
-  if(pipelineArea===name)pipelineArea='all';
+  const name=areas[idx];if(members.some(m=>m.area===name)&&!confirm(`Remove "${name}"?`))return;
+  areas.splice(idx,1);saveAreas();if(pipelineArea===name)pipelineArea='all';
   renderAreaSelects();renderPipelineTabs();renderAreaList();
 }
-
 function switchTab(name,btn){
-  ['record','review','pipeline'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
+  ['record','review','pipeline','followup'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
   document.getElementById('tab-'+name).style.display='block';
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
+  if(name==='followup')renderFollowUp();
 }
-
+function renderFollowUp(){
+  const SHEPHERDS=['BRog','Favour','Jonathan','LP Becks','LP Jo','Mansa','Theo','Vakai'];
+  const DAG_L1=[{t:'How To Be A Strong Christian'},{t:'Key Facts For Strong Christians'}];
+  const DAG_L2=[{t:'Quiet Time'},{t:'How To Pray'},{t:'It Is A Great Thing To Serve The Lord'},{t:'Many Are Called'}];
+  const DAG_L3=[{t:'The Megachurch'},{t:'What It Means To Be A Shepherd'},{t:'Transform Your Pastoral Ministry'}];
+  const books=arr=>'<div style="display:flex;flex-wrap:wrap;gap:6px">'+arr.map(b=>`<span style="display:inline-block;padding:4px 10px;background:#e8f5e8;border-radius:6px;font-size:12px;color:#2d6a2d;font-weight:600;border:1px solid #c8ddc8">📖 ${b.t}</span>`).join('')+'</div>';
+  const memberRow=(m,level)=>{
+    const uid=`fu_${level}_${m.id}`;
+    if(level===1)return `<div style="border:1px solid #eef5ee;border-radius:8px;padding:12px;margin-bottom:8px;background:#fff">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a">#${m.num}</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+        ${[1,2,3,4].map(w=>`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;background:#f8fdf8;padding:5px 8px;border-radius:6px;border:1px solid #d4e6d4"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Week ${w}</label>`).join('')}
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Holy Ghost Baptism</label>
+    </div>`;
+    if(level===2)return `<div style="border:1px solid #eef5ee;border-radius:8px;padding:12px;margin-bottom:8px;background:#fff">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a">#${m.num}</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#fffdf0;border-radius:6px;border:1px solid #fff3cd"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Quiet Time & Prayer Visitation</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#fffdf0;border-radius:6px;border:1px solid #fff3cd"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Intimate Counselling w/ Ekow</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#fffdf0;border-radius:6px;border:1px solid #fff3cd"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Joined a Sonta</label>
+      </div>
+    </div>`;
+    if(level===3)return `<div style="border:1px solid #eef5ee;border-radius:8px;padding:12px;margin-bottom:8px;background:#fff">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a">#${m.num}</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#f0fdf4;border-radius:6px;border:1px solid #d4edda"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> SAT 1 Day Camp</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#f0fdf4;border-radius:6px;border:1px solid #d4edda"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Has Macaneh on All Devices</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#f0fdf4;border-radius:6px;border:1px solid #d4edda"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Subscribed on All Devices</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#f0fdf4;border-radius:6px;border:1px solid #d4edda"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Has All BDHM Books</label>
+      </div>
+    </div>`;
+    return '';
+  };
+  const levelSection=(grp,level,title,bg,color,booksArr)=>{
+    if(!grp.length)return '';
+    const sorted=grp.sort((a,b)=>(a.firstName||'').localeCompare(b.firstName||''));
+    return `<div style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;background:${bg};color:${color};padding:8px 14px;border-radius:8px;margin-bottom:10px">${title} <span style="font-weight:400;font-size:13px">(${sorted.length} member${sorted.length>1?'s':''})</span></div>
+      ${sorted.map(m=>memberRow(m,level)).join('')}
+      <div style="margin-top:8px;padding:10px 14px;background:#f8fdf8;border-radius:8px;border:1px solid #d4e6d4">
+        <div style="font-size:12px;font-weight:700;color:#4a7a4a;text-transform:uppercase;margin-bottom:5px">📚 Supporting Material — Bishop Dag Heward-Mills</div>
+        ${books(booksArr)}
+      </div>
+    </div>`;
+  };
+  let out='';
+  SHEPHERDS.forEach(shepherd=>{
+    const sm=members.filter(m=>m.bacentaShepherd===shepherd&&['1','2','3'].includes(m.commitment||'1'));
+    if(!sm.length)return;
+    const l1=sm.filter(m=>(m.commitment||'1')==='1'),l2=sm.filter(m=>(m.commitment||'1')==='2'),l3=sm.filter(m=>(m.commitment||'1')==='3');
+    out+=`<div style="background:#fff;border-radius:14px;border:2px solid #2d6a2d;padding:0;margin-bottom:24px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+      <div style="background:#2d6a2d;padding:16px 22px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:28px">🐑</div>
+        <div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px">Bacenta Shepherd</div><div style="font-size:22px;font-weight:800;color:#fff">${shepherd}</div></div>
+      </div>
+      <div style="padding:20px">
+      ${levelSection(l1,1,'Level 1 — Strong Christian Training','#fde8d8','#7a3010',DAG_L1)}
+      ${levelSection(l2,2,'Level 2 — Bible School Training','#fff3cd','#7a5c00',DAG_L2)}
+      ${levelSection(l3,3,'Level 3 — Shepherds Training','#d4edda','#1a5c2e',DAG_L3)}
+      </div></div>`;
+  });
+  const unassigned=members.filter(m=>!m.bacentaShepherd&&['1','2','3'].includes(m.commitment||'1'));
+  if(unassigned.length){
+    const u1=unassigned.filter(m=>(m.commitment||'1')==='1'),u2=unassigned.filter(m=>(m.commitment||'1')==='2'),u3=unassigned.filter(m=>(m.commitment||'1')==='3');
+    out+=`<div style="background:#fff;border-radius:14px;border:2px solid #c8ddc8;padding:0;margin-bottom:24px;overflow:hidden">
+      <div style="background:#7a9a7a;padding:16px 22px;display:flex;align-items:center;gap:12px"><div style="font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:1px">⚠️ No Shepherd Assigned</div></div><div style="padding:20px">
+      ${levelSection(u1,1,'Level 1 — Strong Christian Training','#fde8d8','#7a3010',DAG_L1)}
+      ${levelSection(u2,2,'Level 2 — Bible School Training','#fff3cd','#7a5c00',DAG_L2)}
+      ${levelSection(u3,3,'Level 3 — Shepherds Training','#d4edda','#1a5c2e',DAG_L3)}
+      </div></div>`;
+  }
+  if(!out)out='<div style="text-align:center;padding:40px;color:#9aaa9a;font-size:14px">No members assigned to shepherds yet.</div>';
+  document.getElementById('followup-content').innerHTML=out;
+}
+function printFollowUp(){window.print();}
 function renderAll(){renderMemberList();renderPipeline();}
-
 if(!members.length){
   members=[
     {id:'1',num:'001',firstName:'Amara',surname:'Boateng',age:'28',dob:'1997-03-14',address:'Beethovenstraat 12, Amsterdam',area:'Amsterdam Zuid',commitment:'3'},
@@ -580,9 +592,7 @@ if(!members.length){
     {id:'4',num:'004',firstName:'Emmanuel',surname:'Asante',age:'41',dob:'1984-01-30',address:'Karspeldreef 3, Amsterdam',area:'Amsterdam Zuidoost',commitment:'2'}
   ];nextNum=5;saveData();
 }
-renderAreaSelects();
-renderPipelineTabs();
-renderAll();
+renderAreaSelects();renderPipelineTabs();renderAll();
 if(members.length)loadMember(members[0].id);
 else document.getElementById('memberNumDisplay').textContent='#'+pad(nextNum);
 </script>
