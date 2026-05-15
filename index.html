@@ -162,8 +162,8 @@ select:focus,input:focus{border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,4
         <div class="avcircle" id="avatarCircle" onclick="expandPhoto()" style="cursor:pointer;position:relative" title="Click to expand">?</div>
         <div class="avup">
           <div style="font-size:10px;font-weight:700;color:#4a7a4a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">MEMBER NO. <span id="memberNumDisplay" style="color:#2d6a2d;font-size:14px">---</span></div>
-          <label for="photoInput">📷 Upload Photo</label>
-          <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)">
+          <button type="button" onclick="document.getElementById('photoInput').click()" style="display:inline-block;padding:5px 11px;background:#fff;border:1px solid #c8ddc8;border-radius:6px;font-size:12px;font-weight:500;color:#2d6a2d;cursor:pointer;font-family:inherit">📷 Upload Photo</button>
+          <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)" style="display:none">
           <p>JPG or PNG · Click photo to expand</p>
         </div>
       </div>
@@ -258,6 +258,8 @@ select:focus,input:focus{border-color:#2d6a2d;box-shadow:0 0 0 3px rgba(45,106,4
           <div class="ritem"><input type="checkbox" id="c_sp3" onchange="calcScore()"><label for="c_sp3">Listens to FL/BDHM preaching messages weekly</label><span class="pts">20pt</span></div>
           <div class="ritem"><input type="checkbox" id="c_sp4" onchange="calcScore()"><label for="c_sp4">Avid interest in Christian books this month</label><span class="pts">20pt</span></div>
           <div class="ritem"><input type="checkbox" id="c_sp5" onchange="calcScore()"><label for="c_sp5">Active tithe payer</label><span class="pts">50pt</span></div>
+          <div class="ritem"><input type="checkbox" id="c_cd1" onchange="calcScore()"><label for="c_cd1">Finished New Believers School</label><span class="pts">10pt</span></div>
+          <div class="ritem"><input type="checkbox" id="c_cd2" onchange="calcScore()"><label for="c_cd2">Governor</label><span class="pts">30pt</span></div>
         </div>
       </div>
 
@@ -315,7 +317,7 @@ const CHECKS = [
   {id:'c_fr1',pts:10},{id:'c_fr2',pts:10},{id:'c_fr3',pts:10},{id:'c_fr4',pts:20},{id:'c_fr5',pts:50},
   {id:'c_co1',pts:10},{id:'c_co2',pts:10},{id:'c_co3',pts:20},
   {id:'c_ca1',pts:20},{id:'c_ca2',pts:30},
-  {id:'c_sp1',pts:20},{id:'c_sp2',pts:20},{id:'c_sp3',pts:20},{id:'c_sp4',pts:20},{id:'c_sp5',pts:50}
+  {id:'c_sp1',pts:20},{id:'c_sp2',pts:20},{id:'c_sp3',pts:20},{id:'c_sp4',pts:20},{id:'c_sp5',pts:50},{id:'c_cd1',pts:10},{id:'c_cd2',pts:30}
 ];
 const CHECK_LABELS = {
   c_sun3m:'Sunday (past 3 months)',c_sun1m:'Sunday (past month)',c_sun1w:'Sunday (past week)',
@@ -325,7 +327,7 @@ const CHECK_LABELS = {
   c_co1:'IC with Ekow (3 months)',c_co2:'S.A.T or Leaders meeting',c_co3:'Received correction well',
   c_ca1:'Ams/NL camp (3 months)',c_ca2:'International camp/conference',
   c_sp1:'Free from worldly lifestyle',c_sp2:'Prayer & Bible lifestyle',
-  c_sp3:'Listens to FL/BDHM weekly',c_sp4:'Interest in Christian books',c_sp5:'Active tithe payer'
+  c_sp3:'Listens to FL/BDHM weekly',c_sp4:'Interest in Christian books',c_sp5:'Active tithe payer',c_cd1:'Finished New Believers School',c_cd2:'Governor'
 };
 const LEVELS={
   1:{label:'Fairweather',cls:'kl1',dot:'d1',ph:'ph1',color:'#e07030'},
@@ -386,10 +388,19 @@ function updateAvatar(photoSrc){
   c.innerHTML=(fn?fn[0].toUpperCase():'')+(sn?sn[0].toUpperCase():'')||'?';
 }
 
+let tempPhoto = null;
 function handlePhoto(input){
   if(!input.files||!input.files[0])return;
   const r=new FileReader();
-  r.onload=e=>{updateAvatar(e.target.result);if(currentId){const m=members.find(x=>x.id===currentId);if(m){m.photo=e.target.result;saveData();}}};
+  r.onload=e=>{
+    updateAvatar(e.target.result);
+    if(currentId){
+      const m=members.find(x=>x.id===currentId);
+      if(m){m.photo=e.target.result;saveData();}
+    } else {
+      tempPhoto=e.target.result;
+    }
+  };
   r.readAsDataURL(input.files[0]);
 }
 
@@ -404,6 +415,7 @@ function newMember(){
   if(cd) cd.textContent='Level 1 — Fairweather';
   document.getElementById('memberNumDisplay').textContent='#'+pad(nextNum);
   document.getElementById('avatarCircle').innerHTML='?';
+  tempPhoto=null;
   document.getElementById('reviewNoMember').style.display='block';
   document.getElementById('reviewContent').style.display='none';
   switchTab('record', document.querySelectorAll('.tab')[0]);
@@ -422,6 +434,7 @@ function saveMember(){
     if(photo)members[idx].photo=photo;
   } else {
     const nm={id:Date.now().toString(),num:pad(nextNum),...data};
+    if(tempPhoto){nm.photo=tempPhoto;tempPhoto=null;}
     members.push(nm);currentId=nm.id;nextNum++;
   }
   saveData();renderAll();toast('✅ Member saved!');
