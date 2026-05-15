@@ -289,9 +289,19 @@ select:focus,input:focus{border-color:#2d6a2d}
 
   <!-- FOLLOW UP -->
   <div id="tab-followup" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div style="font-size:20px;font-weight:700;color:#2d6a2d">📋 Follow Up Assignments</div>
       <button onclick="printFollowUp()" style="padding:9px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;background:#1a3a8a;color:#fff;font-family:inherit">🖨️ Export PDF</button>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;align-items:flex-start">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#4a7a4a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Area</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap" id="fu-area-btns"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#4a7a4a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Month</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap" id="fu-month-btns"></div>
+      </div>
     </div>
     <div id="followup-content"></div>
   </div>
@@ -505,25 +515,65 @@ function switchTab(name,btn){
   document.getElementById('tab-'+name).style.display='block';
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
-  if(name==='followup')renderFollowUp();
+  if(name==='followup'){renderFuAreaBtns();renderFuMonthBtns();renderFollowUp();}
 }
+let _fuArea='all', _fuMonth=null;
+
+function renderFuAreaBtns(){
+  const all=['all',...areas];
+  document.getElementById('fu-area-btns').innerHTML=all.map(a=>{
+    const active=a===_fuArea;
+    return `<button onclick="setFuArea('${a}')" style="padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #c8ddc8;background:${active?'#2d6a2d':'#fff'};color:${active?'#fff':'#4a7a4a'}">${a==='all'?'All Areas':a}</button>`;
+  }).join('');
+}
+
+function renderFuMonthBtns(){
+  const allMonths=[...new Set(Object.values(reviews).flatMap(r=>Object.keys(r)))].sort().reverse();
+  const now=new Date();
+  const tm=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  if(!allMonths.includes(tm))allMonths.unshift(tm);
+  if(!_fuMonth)_fuMonth=tm;
+  document.getElementById('fu-month-btns').innerHTML=allMonths.map(m=>{
+    const d=new Date(m+'-01');
+    const label=d.toLocaleString('default',{month:'long',year:'numeric'});
+    const active=m===_fuMonth;
+    return `<button onclick="setFuMonth('${m}')" style="padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #c8ddc8;background:${active?'#2d6a2d':'#fff'};color:${active?'#fff':'#4a7a4a'}">${label}</button>`;
+  }).join('');
+}
+
+function setFuArea(a){_fuArea=a;renderFuAreaBtns();renderFollowUp();}
+function setFuMonth(m){_fuMonth=m;renderFuMonthBtns();renderFollowUp();}
+
 function renderFollowUp(){
+  renderFuAreaBtns();
+  renderFuMonthBtns();
   const SHEPHERDS=['BRog','Favour','Jonathan','LP Becks','LP Jo','Mansa','Theo','Vakai'];
   const DAG_L1=[{t:'How To Be A Strong Christian'},{t:'Key Facts For Strong Christians'}];
   const DAG_L2=[{t:'Quiet Time'},{t:'How To Pray'},{t:'It Is A Great Thing To Serve The Lord'},{t:'Many Are Called'}];
   const DAG_L3=[{t:'The Megachurch'},{t:'What It Means To Be A Shepherd'},{t:'Transform Your Pastoral Ministry'}];
   const books=arr=>'<div style="display:flex;flex-wrap:wrap;gap:6px">'+arr.map(b=>`<span style="display:inline-block;padding:4px 10px;background:#e8f5e8;border-radius:6px;font-size:12px;color:#2d6a2d;font-weight:600;border:1px solid #c8ddc8">📖 ${b.t}</span>`).join('')+'</div>';
-  const memberRow=(m,level)=>{
+  const memberRow=(m,level,idx)=>{
     const uid=`fu_${level}_${m.id}`;
     if(level===1)return `<div style="border:1px solid #eef5ee;border-radius:8px;padding:12px;margin-bottom:8px;background:#fff">
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a">#${m.num}</span></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#2d6a2d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${idx+1}</div>
+        <div style="font-size:15px;font-weight:700;color:#1a2e1a">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a;font-weight:400">#${m.num}</span></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:#4a7a4a;text-transform:uppercase;margin-bottom:5px">Strong Christian Camp</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
         ${[1,2,3,4].map(w=>`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;background:#f8fdf8;padding:5px 8px;border-radius:6px;border:1px solid #d4e6d4"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Week ${w}</label>`).join('')}
+      </div>
+      <div style="font-size:11px;font-weight:700;color:#4a7a4a;text-transform:uppercase;margin-bottom:5px">Strong Christian Camp</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+        ${[1,2,3,4].map(w=>`<label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;background:#fff8f5;padding:5px 8px;border-radius:6px;border:1px solid #fde8d8"><input type="checkbox" style="width:16px;height:16px;accent-color:#e07030"> Week ${w}</label>`).join('')}
       </div>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Holy Ghost Baptism</label>
     </div>`;
     if(level===2)return `<div style="border:1px solid #eef5ee;border-radius:8px;padding:12px;margin-bottom:8px;background:#fff">
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a">#${m.num}</span></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#d4a017;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${idx+1}</div>
+        <div style="font-size:15px;font-weight:700;color:#1a2e1a">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a;font-weight:400">#${m.num}</span></div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#fffdf0;border-radius:6px;border:1px solid #fff3cd"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Quiet Time & Prayer Visitation</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#fffdf0;border-radius:6px;border:1px solid #fff3cd"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Intimate Counselling w/ Ekow</label>
@@ -531,7 +581,10 @@ function renderFollowUp(){
       </div>
     </div>`;
     if(level===3)return `<div style="border:1px solid #eef5ee;border-radius:8px;padding:12px;margin-bottom:8px;background:#fff">
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a">#${m.num}</span></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#28a745;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${idx+1}</div>
+        <div style="font-size:15px;font-weight:700;color:#1a2e1a">${m.firstName} ${m.surname} <span style="font-size:12px;color:#7a9a7a;font-weight:400">#${m.num}</span></div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#f0fdf4;border-radius:6px;border:1px solid #d4edda"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> SAT 1 Day Camp</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding:5px 8px;background:#f0fdf4;border-radius:6px;border:1px solid #d4edda"><input type="checkbox" style="width:16px;height:16px;accent-color:#2d6a2d"> Has Macaneh on All Devices</label>
@@ -546,7 +599,7 @@ function renderFollowUp(){
     const sorted=grp.sort((a,b)=>(a.firstName||'').localeCompare(b.firstName||''));
     return `<div style="margin-bottom:16px">
       <div style="font-size:15px;font-weight:800;background:${bg};color:${color};padding:8px 14px;border-radius:8px;margin-bottom:10px">${title} <span style="font-weight:400;font-size:13px">(${sorted.length} member${sorted.length>1?'s':''})</span></div>
-      ${sorted.map(m=>memberRow(m,level)).join('')}
+      ${sorted.map((m,idx)=>memberRow(m,level,idx)).join('')}
       <div style="margin-top:8px;padding:10px 14px;background:#f8fdf8;border-radius:8px;border:1px solid #d4e6d4">
         <div style="font-size:12px;font-weight:700;color:#4a7a4a;text-transform:uppercase;margin-bottom:5px">📚 Supporting Material — Bishop Dag Heward-Mills</div>
         ${books(booksArr)}
@@ -555,7 +608,7 @@ function renderFollowUp(){
   };
   let out='';
   SHEPHERDS.forEach(shepherd=>{
-    const sm=members.filter(m=>m.bacentaShepherd===shepherd&&['1','2','3'].includes(m.commitment||'1'));
+    const sm=members.filter(m=>m.bacentaShepherd===shepherd&&['1','2','3'].includes(m.commitment||'1')&&(_fuArea==='all'||m.area===_fuArea));
     if(!sm.length)return;
     const l1=sm.filter(m=>(m.commitment||'1')==='1'),l2=sm.filter(m=>(m.commitment||'1')==='2'),l3=sm.filter(m=>(m.commitment||'1')==='3');
     out+=`<div style="background:#fff;border-radius:14px;border:2px solid #2d6a2d;padding:0;margin-bottom:24px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)">
@@ -569,7 +622,7 @@ function renderFollowUp(){
       ${levelSection(l3,3,'Level 3 — Shepherds Training','#d4edda','#1a5c2e',DAG_L3)}
       </div></div>`;
   });
-  const unassigned=members.filter(m=>!m.bacentaShepherd&&['1','2','3'].includes(m.commitment||'1'));
+  const unassigned=members.filter(m=>!m.bacentaShepherd&&['1','2','3'].includes(m.commitment||'1')&&(_fuArea==='all'||m.area===_fuArea));
   if(unassigned.length){
     const u1=unassigned.filter(m=>(m.commitment||'1')==='1'),u2=unassigned.filter(m=>(m.commitment||'1')==='2'),u3=unassigned.filter(m=>(m.commitment||'1')==='3');
     out+=`<div style="background:#fff;border-radius:14px;border:2px solid #c8ddc8;padding:0;margin-bottom:24px;overflow:hidden">
